@@ -157,6 +157,15 @@ export default function sketch(p) {
   // Utwórz nową siatkę
   let grid = new Grid(currnetGridSize, squareSize, currentWallFrequency);
 
+  // Funcka zwracająca wartość heurystyki dla siatki, gdzie można poruszać się po przekątnych
+  let heuristic = (a, b) => {
+    let D1 = 1;
+    let D2 = 1; // 1 - Chebyshev distance, sqrt(2) - octile distance
+    let dx = p.abs(a.x - b.x);
+    let dy = p.abs(a.y - b.y);
+    return D1 * (dx + dy) + (D2 - 2 * D1) * Math.min(dx, dy);
+  };
+
   p.setup = function() {
     p.createCanvas(windowSize, windowSize);
     grid.createNodes();
