@@ -8,9 +8,9 @@ class App extends Component {
     super(props);
     this.state = {
       // Wielkość siatki
-      gridSize: 5,
+      gridSize: 20,
       // Częstość występowania przeszkód
-      wallFrequency: 0,
+      wallFrequency: 20,
       // Czy algorytm wyszukuje rozwiązania
       isSearching: false,
       // Czy algorytm znalazł rozwiąznie
