@@ -22,6 +22,7 @@ class App extends Component {
     };
   }
 
+  // Funckja wywoływana przy zmianie wielkości siatki
   gridSizeChange = event =>
     this.setState({
       gridSize: event.target.value,
@@ -29,6 +30,7 @@ class App extends Component {
       message: "Rozpocznij szukanie"
     });
 
+  // Funckja wywoływana przy zmianie częstości występowania przeszkód
   wallFrequencyChange = event =>
     this.setState({
       wallFrequency: event.target.value,
@@ -36,6 +38,7 @@ class App extends Component {
       message: "Rozpocznij szukanie"
     });
 
+  // Funkcjka uruchamiająca i zatrzymująca algorytm
   toggleSearch = () => {
     this.setState({
       isSearching: !this.state.isSearching,
