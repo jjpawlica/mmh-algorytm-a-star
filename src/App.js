@@ -58,7 +58,7 @@ class App extends Component {
           values={{
             gridSize: this.state.gridSize,
             wallFrequency: this.state.wallFrequency,
-            search: this.state.isSearching
+            isSearching: this.state.isSearching
           }}
           callback={this.stateChange}
         />
