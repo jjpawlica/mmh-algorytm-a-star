@@ -60,6 +60,33 @@ export default function sketch(p) {
         }
       }
     };
+
+    // Dla każdego pola ustal sąsiadów
+    setNodesNeighbors = () => {
+      for (let x = 0; x < this.gridSize; x++) {
+        for (let y = 0; y < this.gridSize; y++) {
+          if (!this.grid[x][y].wall) {
+            for (
+              let i = Math.max(0, x - 1);
+              i <= Math.min(x + 1, this.gridSize - 1);
+              i++
+            ) {
+              for (
+                let j = Math.max(0, y - 1);
+                j <= Math.min(y + 1, this.gridSize - 1);
+                j++
+              ) {
+                if (i !== x || j !== y) {
+                  if (!this.grid[i][j].wall) {
+                    this.grid[x][y].neighbors.push(this.grid[i][j]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    };
   }
 
   // Definicja pola
