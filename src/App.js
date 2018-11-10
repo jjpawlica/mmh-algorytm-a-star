@@ -46,6 +46,8 @@ class App extends Component {
     });
   };
 
+  stateChange = (newState, callback) => this.setState(newState, callback);
+
   render() {
     return (
       <div>
@@ -54,7 +56,9 @@ class App extends Component {
         <P5Wrapper
           sketch={this.state.stateSketch}
           values={{
-            search: this.state.search
+            gridSize: this.state.gridSize,
+            wallFrequency: this.state.wallFrequency,
+            search: this.state.isSearching
           }}
           callback={this.stateChange}
         />

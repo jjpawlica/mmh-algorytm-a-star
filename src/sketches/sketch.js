@@ -160,15 +160,51 @@ export default function sketch(p) {
   p.setup = function() {
     p.createCanvas(windowSize, windowSize);
     grid.createNodes();
+    grid.setNodesNeighbors();
+    grid.openSet.push(grid.start);
+    grid.start.isInOpenSet = true;
+    console.log("SETUP");
+    console.log(grid);
+    console.log(grid.openSet.length);
   };
 
   p.customRedrawHandler = function(values) {
     newGridSize = values.gridSize;
     newWallFrequency = values.wallFrequency / 100;
+    isSearching = values.isSearching;
   };
 
   p.draw = function() {
     p.background(255);
+
+    // Utwórz nową siatkę jak zostanie zmieniony rozmiar
+    if (newGridSize !== currnetGridSize) {
+      squareSize = windowSize / newGridSize;
+      currnetGridSize = newGridSize;
+      grid = new Grid(currnetGridSize, squareSize, currentWallFrequency);
+      grid.createNodes();
+      grid.setNodesNeighbors();
+      grid.openSet.push(grid.start);
+      grid.start.isInOpenSet = true;
+      p.customCallbackHandler({ isDone: false });
+      console.log("AKTUALIZACJA WIELKOSC");
+      console.log(grid);
+      console.log(grid.openSet.length);
+    }
+
+    // Utwórz nową siatkę jak zostanie zmieniona częstość występowania ścian
+    if (newWallFrequency !== currentWallFrequency) {
+      currentWallFrequency = newWallFrequency;
+      grid = new Grid(currnetGridSize, squareSize, currentWallFrequency);
+      grid.createNodes();
+      grid.setNodesNeighbors();
+      grid.openSet.push(grid.start);
+      grid.start.isInOpenSet = true;
+      p.customCallbackHandler({ isDone: false });
+      console.log("AKTUALIZACJA SCIANY");
+      console.log(grid);
+      console.log(grid.openSet.length);
+    }
 
     // Wyświetl obecny stan siatki
     grid.displayNodes();
