@@ -160,7 +160,7 @@ export default function sketch(p) {
   // Funcka zwracająca wartość heurystyki dla siatki, gdzie można poruszać się po przekątnych
   let heuristic = (a, b) => {
     let D1 = 1;
-    let D2 = 1; // 1 - Chebyshev distance, sqrt(2) - octile distance
+    let D2 = Math.sqrt(2); // 1 - Chebyshev distance, sqrt(2) - octile distance
     let dx = p.abs(a.x - b.x);
     let dy = p.abs(a.y - b.y);
     return D1 * (dx + dy) + (D2 - 2 * D1) * Math.min(dx, dy);
@@ -172,9 +172,6 @@ export default function sketch(p) {
     grid.setNodesNeighbors();
     grid.openSet.push(grid.start);
     grid.start.isInOpenSet = true;
-    console.log("SETUP");
-    console.log(grid);
-    console.log(grid.openSet.length);
   };
 
   p.customRedrawHandler = function(values) {
@@ -196,9 +193,6 @@ export default function sketch(p) {
       grid.openSet.push(grid.start);
       grid.start.isInOpenSet = true;
       p.customCallbackHandler({ isDone: false });
-      console.log("AKTUALIZACJA WIELKOSC");
-      console.log(grid);
-      console.log(grid.openSet.length);
     }
 
     // Utwórz nową siatkę jak zostanie zmieniona częstość występowania ścian
@@ -210,16 +204,108 @@ export default function sketch(p) {
       grid.openSet.push(grid.start);
       grid.start.isInOpenSet = true;
       p.customCallbackHandler({ isDone: false });
-      console.log("AKTUALIZACJA SCIANY");
-      console.log(grid);
-      console.log(grid.openSet.length);
     }
 
     // Wyświetl obecny stan siatki
     grid.displayNodes();
 
     // Szukaj rozwiązania - implementacja algorytmu A*
-    if (isSearching) {
+    if (isSearching && grid.openSet.length > 0) {
+      p.customCallbackHandler({ message: "Szuka rozwiązania" });
+
+      // Znajdz pole w zbiorze otwartym, które ma najleszą wartość funkcji F
+      let bestFScoreIndex = 0;
+      for (let i = 0; i < grid.openSet.length; i++) {
+        if (grid.openSet[i].f < grid.openSet[bestFScoreIndex].f) {
+          bestFScoreIndex = i;
+        }
+      }
+
+      // Ustaw obence pole jako to, które ma najleszą wartość funkcji F
+      let currentNode = grid.openSet[bestFScoreIndex];
+
+      // Usuń obecne pole ze zbioru otwartego
+      grid.openSet = grid.openSet.filter(
+        (value, index) => index !== bestFScoreIndex
+      );
+      currentNode.isInOpenSet = false;
+
+      // Dodaj obecne pole do zbioru zamkniętego
+      grid.closedSet.push(currentNode);
+      currentNode.isInClosedSet = true;
+
+      // Zakończ działanie algorytu jeżeli obecne pole jest polem końcowym
+      if (currentNode === grid.end) {
+        // Przerwij szukanie
+        isSearching = false;
+
+        // Zbuduj optymalną scieżke rozwiązania
+        let temporalNode = currentNode;
+        grid.optimalPath.push(temporalNode);
+        while (temporalNode.partent) {
+          grid.optimalPath.push(temporalNode.partent);
+          temporalNode = temporalNode.partent;
+        }
+
+        // Pokoloruj optymalną scieżke rozwiązania
+        for (let i = 0; i < grid.optimalPath.length; i++) {
+          grid.optimalPath[i].isOptimalPath = true;
+        }
+
+        // Przekaż informacje o wykonanym algorytmie do React
+        p.customCallbackHandler({
+          isSearching: isSearching,
+          isDone: true,
+          message: "Znaleziono rozwiązanie"
+        });
+      }
+
+      // Utwórz kopię listy sąsiadów dla obecnego pola - dla czytelności rozwiązania
+      let neighbors = currentNode.neighbors;
+
+      // Sprawdź sąsiadów obecnego pola
+      for (let i = 0; i < neighbors.length; i++) {
+        // Sprawdż czy obecnie sprawdzany sąsiad nie należy do zbioru zamkniętego - jeżeli należy to zignoruj
+        if (!grid.closedSet.includes(neighbors[i])) {
+          // Oblicz wartość funkcji G (odległość) od startu do sprawdzanego sąsiada
+          let temporaryGScore =
+            currentNode.g + heuristic(neighbors[i], currentNode);
+          let isPathBetter = false;
+          // Sprawdż czy obecnie sprawdzany sąsiad jest już w zbiorze otwartym
+          if (grid.openSet.includes(neighbors[i])) {
+            // Jeżeli jest w zbiorze otwartym i wartość funkcji G dla tego pola jest większa od tymczasowej wartośći funkcji G
+            // to ustaw wartość funkcji G dla tego pola na wartość tymszasową i uznaj że jest to lepsza ścieżka
+            if (temporaryGScore < neighbors[i].g) {
+              neighbors[i].g = temporaryGScore;
+              isPathBetter = true;
+            }
+            // Jeżeli nie jest w zbiorze otwartym to go dodaj i przyporządkuj mu wartość G, jest to lepsza ścieżka
+          } else {
+            neighbors[i].g = temporaryGScore;
+            isPathBetter = true;
+            grid.openSet.push(neighbors[i]);
+            neighbors[i].isInOpenSet = true;
+          }
+          // Jeżeli na tej podstawie odnalezione lepszą ścieżkę to oblicz heurystykę dla tego sąsiada i końca, oblicz wartość funkcji F
+          // Przypisz do tego pola, pole poprzednie jako pole, w celu ustalenia najlepszej ścieżki
+          if (isPathBetter) {
+            neighbors[i].h = heuristic(neighbors[i], grid.end);
+            neighbors[i].f = neighbors[i].g + neighbors[i].h;
+            neighbors[i].partent = currentNode;
+          }
+        }
+      }
+      // Jeżeli nie ma już pól w zbiorze otwartym a nie dotarliśmy do końca, to zadanie nie ma roziązania
+    } else if (isSearching && grid.openSet.length === 0) {
+      // Przerwij szukanie
+      isSearching = false;
+
+      // Przekaż informacje o wykonanym algorytmie do React
+      p.customCallbackHandler({
+        isSearching: !isSearching,
+        isDone: true,
+        message: "Brak rozwiązania"
+      });
     }
   };
 }
