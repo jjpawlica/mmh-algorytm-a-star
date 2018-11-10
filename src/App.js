@@ -7,9 +7,41 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // Wielkość siatki
+      gridSize: 5,
+      // Częstość występowania przeszkód
+      wallFrequency: 0,
+      // Czy algorytm wyszukuje rozwiązania
+      isSearching: false,
+      // Czy algorytm znalazł rozwiąznie
+      isDone: false,
+      // Wiadomość do wyświetlenia
+      message: "Rozpocznij szukanie",
+      // Zaimportowany sketch
       stateSketch: sketch
     };
   }
+
+  gridSizeChange = event =>
+    this.setState({
+      gridSize: event.target.value,
+      isSearching: false,
+      message: "Rozpocznij szukanie"
+    });
+
+  wallFrequencyChange = event =>
+    this.setState({
+      wallFrequency: event.target.value,
+      isSearching: false,
+      message: "Rozpocznij szukanie"
+    });
+
+  toggleSearch = () => {
+    this.setState({
+      isSearching: !this.state.isSearching,
+      message: "Rozpocznij szukanie"
+    });
+  };
 
   render() {
     return (
@@ -23,6 +55,31 @@ class App extends Component {
           }}
           callback={this.stateChange}
         />
+        <h2>Stan: {this.state.message}</h2>
+        <p>
+          Wielkość siatki: {this.state.gridSize} x {this.state.gridSize}
+        </p>
+        <input
+          type="range"
+          defaultValue={this.state.gridSize}
+          min="5"
+          max="100"
+          step="5"
+          onInput={this.gridSizeChange}
+        />
+        <p>Częstość ścian: {this.state.wallFrequency}%</p>
+        <input
+          type="range"
+          defaultValue={this.state.wallFrequency}
+          min="0"
+          max="100"
+          step="1"
+          onInput={this.wallFrequencyChange}
+        />
+        <br />
+        <button onClick={this.toggleSearch} disabled={this.state.isDone}>
+          {!this.state.isSearching ? "SZUKAJ" : "ZAKOŃCZ"}
+        </button>
       </div>
     );
   }
