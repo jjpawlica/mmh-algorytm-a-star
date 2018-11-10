@@ -24,7 +24,13 @@ export default function sketch(p) {
       this.gridSize = gridSize;
       this.squareSize = squareSize;
       this.wallFrequency = wallFrequency;
+
       this.grid = new Array(gridSize);
+
+      // Listy pół potrzebne do działania algorytmu
+      this.openSet = [];
+      this.closedSet = [];
+      this.optimalPath = [];
     }
 
     // Utwórz stosowną strukturę siatki
@@ -73,6 +79,22 @@ export default function sketch(p) {
       if (Math.random() < wallFrequency) {
         this.wall = true;
       }
+
+      // Wartości funckji dla algorytmu
+      this.f = 0;
+      this.g = 0;
+      this.h = 0;
+
+      // Sąsiedzi danego pola
+      this.neighbors = [];
+
+      // Poprzednie pole
+      this.partent = undefined;
+
+      // Do jakiego zbioru należy dane pole
+      this.isInOpenSet = false;
+      this.isInClosedSet = false;
+      this.isOptimalPath = false;
     }
 
     // Wyświetl pole
@@ -82,6 +104,18 @@ export default function sketch(p) {
 
       if (this.wall) {
         p.fill(36);
+      }
+
+      if (this.isInOpenSet) {
+        p.fill(p.color(0, 255, 0, 80));
+      }
+
+      if (this.isInClosedSet) {
+        p.fill(p.color(255, 0, 0, 80));
+      }
+
+      if (this.isOptimalPath) {
+        p.fill(p.color(0, 0, 255, 80));
       }
 
       p.rect(
